@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8"/>
+</head>
+<body>
+<canvas width="600" height="600" id="test">Обновите браузер</canvas>
+<script>
+    window.onload = function () {
+
+        let canvas = document.getElementById('test'),
+            ctx = canvas.getContext('2d');
+
+        let img = new Image();
+
+        img.onload = function () {
+            ctx.drawImage(this, 0, 0, 36, 50);
+
+            let imgData = ctx.getImageData(0, 0, 36, 50);
+
+            for (let i = 0; i < imgData.data.length; i += 4) {
+
+                let r = imgData.data[i],
+                    g = imgData.data[i+1],
+                    b = imgData.data[i+2],
+                    a = imgData.data[i+3];
+
+                if ( a > 0) {
+
+					   imgData.data[i]=255-imgData.data[i];
+					   imgData.data[i+1]=255-imgData.data[i+1];
+					   imgData.data[i+2]=255-imgData.data[i+2];
+//                     imgData.data[i + 3] = 0;
+
+                } else {
+// 					// console.log('--Not found');	
+                }
+            }
+            console.log(imgData);
+
+            ctx.putImageData(imgData, 0, 0);
+
+        };
+
+        img.src = 'img/bag.png';
+        img.setAttribute('crossOrigin', '');
+
+    }
+
+</script>
+
+</body>
+</html>
