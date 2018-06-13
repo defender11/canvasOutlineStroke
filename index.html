@@ -4,83 +4,61 @@
         <title>outlineStrokePng.js</title>
         <meta charset="utf-8"/>
         <script src="js/outlineStrokePng.js"></script>
+        <style>
+            body { background: #eeeeee; }
+            #test { border: 1px solid; }
+        </style>
     </head>
     <body>
-        <canvas width="600" height="600" id="test">Обновите браузер</canvas>
-        <canvas width="600" height="600" id="test2">Обновите браузер</canvas>
-        <canvas width="600" height="600" id="test3">Обновите браузер</canvas>
+        <canvas width="400" height="400" id="test">Обновите браузер</canvas>
         <script>
             window.onload = function () {
 
-                let canvas = document.getElementById('test'),
-                    canvas2 = document.getElementById('test'),
-                    canvas3 = document.getElementById('test'),
-                    ctx = canvas.getContext('2d'),
-                    ctx2 = canvas2.getContext('2d'),
-                    ctx3 = canvas3.getContext('2d');
+                var canvas = document.getElementById('test'),
+                    ctx = canvas.getContext('2d');
 
-                let param = {
-                    img: {
-                        src: 'img/bag.png',
-                        W: 36,
-                        H: 50,
-                        X: 0,
-                        Y: 0,
-                        findAlpha: 0
-                    },
-                    outlineColor: {
-                        red: 0,
-                        green: 0,
-                        blue: 0,
-                        alpha: 255
-                    },
-                    ctx: ctx
+                var img = new Image();
+
+                img.onload = function () {
+                    // нарисуем картинку для разбора
+                    ctx.drawImage(this, 0, 0, this.width, this.height);
+
+                    // Получим нарисованное изображение ввиде массива
+                    var imgData = ctx.getImageData(0, 0, this.width, this.height);
+
+                    var param = {
+                        img: this,
+                        imgData: imgData,
+                        searchAlphaPixel: 0,
+                        color: {
+                            red: 0,
+                            green: 0,
+                            blue: 0,
+                            alpha: 255
+                        }
+                    };
+
+                    function drawOutLine() {
+
+                        ImageOutline.init(param);
+
+                        ctx.putImageData(ImageOutline.getData(), 0, 0);
+                    }
+
+                    function clearCanvas() {
+
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                        // нарисуем картинку для разбора
+                        ctx.drawImage(img, 0, 0, img.width, img.height);
+                    }
+
+                    canvas.addEventListener('mouseover', drawOutLine);
+                    canvas.addEventListener('mouseout', clearCanvas);
+
                 };
 
-                let param2 = {
-                    img: {
-                        src: 'img/test.png',
-                        W: 630,
-                        H: 420,
-                        X: 0,
-                        Y: 0,
-                        findAlpha: 0
-                    },
-                    outlineColor: {
-                        red: 0,
-                        green: 0,
-                        blue: 0,
-                        alpha: 255
-                    },
-                    ctx: ctx2
-                };
-
-                let param3 = {
-                    img: {
-                        src: 'img/test2.png',
-                        W: 630,
-                        H: 651,
-                        X: 0,
-                        Y: 0,
-                        findAlpha: 0
-                    },
-                    outlineColor: {
-                        red: 0,
-                        green: 0,
-                        blue: 0,
-                        alpha: 255
-                    },
-                    ctx: ctx2
-                };
-
-                // let imgOutline = new ImageOutline(param);
-                // imgOutline.draw();
-                //
-                // let imgOutline2 = new ImageOutline(param2);
-                // imgOutline2.draw();
-
-                let imgOutline3 = new ImageOutline(param3);
-                imgOutline3.draw();
+                img.src  = 'img/bag.png';
             }
         </script>
     </body>
