@@ -10,7 +10,7 @@
         </style>
     </head>
     <body>
-        <canvas width="400" height="400" id="test">Обновите браузер</canvas>
+        <canvas width="1600" height="1600" id="test">Обновите браузер</canvas>
         <script>
             window.onload = function () {
 
@@ -41,9 +41,21 @@
                     ImageOutline.init(param);
 
                     function drawOutLine() {
-                        ctx.putImageData(ImageOutline.getImageData(), 0, 0);
+                        var time = performance.now();
+
+
+                        // некий код
+                        // ctx.putImageData(ImageOutline.getImageData(), 0, 0);
                         // ImageOutline.draw(ctx);
-                    }
+                        var imgOutline = ImageOutline.toImg(img);
+                        console.log(imgOutline);
+                        // document.write("<img src='" + imgOutline.src + "' width='"+ imgOutline.width +"' height='"+ imgOutline.height +"' />");
+
+
+                        time = performance.now() - time;
+                        console.log('Время выполнения = ', time);
+
+                       }
 
                     function clearCanvas() {
                         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -55,7 +67,7 @@
 
                 };
 
-                img.src  = 'img/bag.png';
+                img.src  = 'img/test2.png';
             }
         </script>
     </body>

@@ -12,6 +12,54 @@ var ImageOutline = (function () {
 
     var imageOutline;
 
+    var pixel = {
+        oneLineSize: 0,
+        getRedColor : function (i) { return i; },
+        getGreenColor : function (i) { return i + 1; },
+        getBlueColor : function (i) { return i + 2; },
+        getAlphaColor : function (i) { return i + 3; },
+
+        /**
+         * посмотрим на пиксель вверх
+         *
+         * @param i
+         * @returns {number}
+         */
+        getAlphaPixelTop: function (i) {
+            return i - this.oneLineSize;
+        },
+
+        /**
+         * посмотрим на пиксель вниз
+         *
+         * @param i
+         * @returns {number}
+         */
+        getAlphaPixelBottom: function (i) {
+            return i + this.oneLineSize;
+        },
+
+        /**
+         *  посмотрим на альфа с влево
+         *
+         * @param i
+         * @returns {number}
+         */
+        getAlphaPixelLeft: function (i) {
+            return i - 4;
+        },
+
+        /**
+         * посмотрим на альфа с право
+         *
+         * @param i
+         * @returns {*}
+         */
+        getAlphaPixelRight: function (i) {
+            return i + 4;
+        }
+    };
+
     function ImageOutline(param) {
 
         this.img = param.img;
@@ -30,7 +78,7 @@ var ImageOutline = (function () {
         /**
         * получим количевство индексов в одной строчке
         */
-        this.oneLineSize = param.img.width * 4;
+        pixel.oneLineSize = param.img.width * 4;
     }
 
     ImageOutline.prototype.getImageData = function () {
@@ -39,28 +87,28 @@ var ImageOutline = (function () {
 
         for (var i = 0; i < imgCount; i += 4) {
 
-            var red   = i,
-                green = i + 1,
-                blue  = i + 2,
-                alpha = i + 3;
+            var red   = pixel.getRedColor(i),
+                green = pixel.getGreenColor(i),
+                blue  = pixel.getBlueColor(i),
+                alpha = pixel.getAlphaColor(i);
 
             var alphaPixel = this.imgData.data[alpha];
 
             if (alphaPixel === this.searchAlphaPixel) {
 
                 if (this.hasPixel(i)) {
-                    this.pixelPositions.push(alpha);
+                    this.pixelPositions.push(i);
 
-                    this.imgDataOut.data[red] = this.color.red;
-                    this.imgDataOut.data[green] = this.color.green;
-                    this.imgDataOut.data[blue] = this.color.blue;
-                    this.imgDataOut.data[alpha] = this.color.alpha;
+                    this.imgData.data[red]   = this.color.red;
+                    this.imgData.data[green] = this.color.green;
+                    this.imgData.data[blue]  = this.color.blue;
+                    this.imgData.data[alpha] = this.color.alpha;
 
                 }
             }
         }
 
-        return this.imgDataOut;
+        return this.imgData;
 
     };
 
@@ -75,20 +123,13 @@ var ImageOutline = (function () {
     ImageOutline.prototype.hasPixel = function (i) {
 
         // посмотрим на pixel вправо
-        var alphaPixelRight = (i + 8);
-        var isHasAlphaPixelRight = this.checkSide(this.imgData.data, alphaPixelRight);
+        var isHasAlphaPixelRight = this.checkSide(pixel.getAlphaPixelRight(i));
 
-        // посмотрим на пиксель влево
-        var alphaPixelLeft = (i - 8);
-        var isHasAlphaPixelLeft = this.checkSide(this.imgData.data, alphaPixelLeft);
+        var isHasAlphaPixelLeft = this.checkSide(pixel.getAlphaPixelLeft(i));
 
-        // посмотрим на пиксель вниз
-        var alphaPixelBottom = (i + (this.oneLineSize + 3));
-        var isHasAlphaPixelBottom = this.checkSide(this.imgData.data, alphaPixelBottom);
+        var isHasAlphaPixelBottom = this.checkSide(pixel.getAlphaPixelBottom(i));
 
-        // посмотрим на пиксель вверх
-        var alphaPixelTop = (i - (this.oneLineSize - 3));
-        var isHasAlphaPixelTop = this.checkSide(this.imgData.data, alphaPixelTop);
+        var isHasAlphaPixelTop = this.checkSide(pixel.getAlphaPixelTop(i));
 
         if (
             isHasAlphaPixelLeft
@@ -115,14 +156,16 @@ var ImageOutline = (function () {
      * @param index
      * @returns {boolean}
      */
-    ImageOutline.prototype.checkSide = function (imgData, index) {
+    ImageOutline.prototype.checkSide = function (index) {
 
         if (index < 0) return false;
 
-        // посмотрим на pixel
-        var alphaPixel = imgData[index];
+        // посмотрим на альфа цвет(канал)
+        var alphaPixel = this.imgData.data[index];
 
+        // Если есть не прозрачный альфа цвет(канал)
         if (alphaPixel > 0) {
+            // Проверим это новый пиксель или ранее заполненный
             return this.isPixelNew(index);
         }
 
@@ -152,14 +195,18 @@ var ImageOutline = (function () {
         getImageData: function () {
             return imageOutline.getImageData();
         },
-        draw: function (ctx) {
-            ctx.putImageData(imageOutline.getImageData(), 0, 0);
+        draw: function (ctx, x,y) {
+            ctx.putImageData(imageOutline.getImageData(), x,y);
         },
-        toFile: function (ctx) {
-            console.log(ctx);
-            // ctx.putImageData(imageOutline.getImageData(), 0, 0);
-            // ctx.toDataURL('image/png').replace(/data:image\/png;base64,/, '');
-            // ctx.toDataURL();
+        toImg: function () {
+            var canvas = document.createElement('canvas');
+            var ctx = canvas.getContext('2d');
+
+            ctx.putImageData(imageOutline.getImageData(), 0, 0);
+
+            imageOutline.img.src = canvas.toDataURL('image/png');
+
+            return imageOutline.img;
         }
     }
 }());
