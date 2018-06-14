@@ -38,18 +38,15 @@
                         }
                     };
 
+                    ImageOutline.init(param);
+
                     function drawOutLine() {
-
-                        ImageOutline.init(param);
-
-                        ctx.putImageData(ImageOutline.getData(), 0, 0);
+                        ctx.putImageData(ImageOutline.getImageData(), 0, 0);
+                        // ImageOutline.draw(ctx);
                     }
 
                     function clearCanvas() {
-
                         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                        // нарисуем картинку для разбора
                         ctx.drawImage(img, 0, 0, img.width, img.height);
                     }
 

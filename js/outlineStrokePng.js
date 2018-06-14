@@ -4,8 +4,8 @@
  * @User: o.l [Oganesov Levon]
  * @mail: levon.oganesov@mail.ru
  * @Date: 06.06.18
- * @LastUpdate: 07.06.2018
- * @Version: 1.0.0
+ * @LastUpdate: 14.06.2018
+ * @Version: 1.0.1
  * -----------------------
  */
 var ImageOutline = (function () {
@@ -16,14 +16,24 @@ var ImageOutline = (function () {
 
         this.img = param.img;
         this.imgData = param.imgData;
+        this.imgDataOut = param.imgData;
         this.searchAlphaPixel = param.searchAlphaPixel;
 
         this.color = param.color;
 
+        /**
+         * Массив с уже имеющимися альфа индексами
+         * в которох уже пискель обводки проставили
+         */
         this.pixelPositions = [];
+
+        /**
+        * получим количевство индексов в одной строчке
+        */
+        this.oneLineSize = param.img.width * 4;
     }
 
-    ImageOutline.prototype.getData = function () {
+    ImageOutline.prototype.getImageData = function () {
 
         var imgCount = this.imgData.data.length;
 
@@ -38,48 +48,61 @@ var ImageOutline = (function () {
 
             if (alphaPixel === this.searchAlphaPixel) {
 
-                // посмотрим на pixel вправо
-                var alphaPixelRight = this.checkSide(this.imgData.data, (i + 8));
+                if (this.hasPixel(i)) {
+                    this.pixelPositions.push(alpha);
 
-                // посмотрим на пиксель влево
-                var alphaPixelLeft = this.checkSide(this.imgData.data, (i + 8));
-
-                // вычеслим такую же позицию пикселя только строчкой ниже
-                var line = this.img.width * 4;
-
-                console.log(line);
-                console.log((line + 3));
-                console.log(i + (line + 3));
-                console.log('-------------');
-
-                // посмотрим на пиксель вниз
-                var alphaPixelBottom = this.checkSide(this.imgData.data, (i + (line + 3)));
-
-                // посмотрим на пиксель вверх
-                var alphaPixelTop = this.checkSide(this.imgData.data, (i - (line - 3)));
-
-                if (
-                    alphaPixelLeft
-                    ||
-                    alphaPixelRight
-                    ||
-                    alphaPixelBottom
-                    ||
-                    alphaPixelTop
-                ) {
-
-                    this.pixelPositions.push((i + 3));
-
-                    this.imgData.data[red] = this.color.red;
-                    this.imgData.data[green] = this.color.green;
-                    this.imgData.data[blue] = this.color.blue;
-                    this.imgData.data[alpha] = 255;
+                    this.imgDataOut.data[red] = this.color.red;
+                    this.imgDataOut.data[green] = this.color.green;
+                    this.imgDataOut.data[blue] = this.color.blue;
+                    this.imgDataOut.data[alpha] = this.color.alpha;
 
                 }
             }
         }
 
-        return this.imgData;
+        return this.imgDataOut;
+
+    };
+
+    /**
+     * Проверим на наличие нужного нам пикселя
+     *
+     * @LastUpdate: 14.06.2018
+     *
+     * @param i
+     * @returns {boolean}
+     */
+    ImageOutline.prototype.hasPixel = function (i) {
+
+        // посмотрим на pixel вправо
+        var alphaPixelRight = (i + 8);
+        var isHasAlphaPixelRight = this.checkSide(this.imgData.data, alphaPixelRight);
+
+        // посмотрим на пиксель влево
+        var alphaPixelLeft = (i - 8);
+        var isHasAlphaPixelLeft = this.checkSide(this.imgData.data, alphaPixelLeft);
+
+        // посмотрим на пиксель вниз
+        var alphaPixelBottom = (i + (this.oneLineSize + 3));
+        var isHasAlphaPixelBottom = this.checkSide(this.imgData.data, alphaPixelBottom);
+
+        // посмотрим на пиксель вверх
+        var alphaPixelTop = (i - (this.oneLineSize - 3));
+        var isHasAlphaPixelTop = this.checkSide(this.imgData.data, alphaPixelTop);
+
+        if (
+            isHasAlphaPixelLeft
+            ||
+            isHasAlphaPixelRight
+            ||
+            isHasAlphaPixelBottom
+            ||
+            isHasAlphaPixelTop
+        ) {
+            return true;
+        }
+
+        return false;
 
     };
 
@@ -126,8 +149,17 @@ var ImageOutline = (function () {
                 imageOutline = new ImageOutline(param);
             }
         },
-        getData: function () {
-            return imageOutline.getData();
+        getImageData: function () {
+            return imageOutline.getImageData();
+        },
+        draw: function (ctx) {
+            ctx.putImageData(imageOutline.getImageData(), 0, 0);
+        },
+        toFile: function (ctx) {
+            console.log(ctx);
+            // ctx.putImageData(imageOutline.getImageData(), 0, 0);
+            // ctx.toDataURL('image/png').replace(/data:image\/png;base64,/, '');
+            // ctx.toDataURL();
         }
     }
 }());
